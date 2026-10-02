@@ -1,0 +1,16 @@
+{
+  "name": "one",
+  "version": "1.0.0",
+  "description": "for practice",
+  "license": "ISC",
+  "author": "charan",
+  "type": "commonjs",
+  "main": "3001",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
