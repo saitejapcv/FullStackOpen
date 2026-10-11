@@ -1,7 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+const Person = require('./models/person')
+const person = require('./models/person')
 
 app.use(express.json())
 app.use(morgan('tiny'))
@@ -36,7 +39,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    // res.json(persons)
+    Person.find({}).then(persons => {
+        res.json(persons)
+    })
 })
 
 app.get('/info', (req, res) => {
@@ -46,12 +52,20 @@ app.get('/info', (req, res) => {
 
 app.get('/api/persons/:id', (req, res) => {
     const id = req.params.id
-    const person = persons.find(person => person.id === id)
-    if (person) {
-        res.json(person)
-    } else {
-        res.status(404).end()
-    }
+    // const person = persons.find(person => person.id === id)
+    // if (person) {
+    //     res.json(person)
+    // } else {
+    //     res.status(404).end()
+    // }
+    Person.findById(id).then(person => {
+        if (person) {
+            res.json(person)
+        }
+        else {
+            res.status(404).end()
+        }
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
@@ -73,22 +87,40 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    const findPerson = persons.find(person => person.name === body.name)
+    Person.findOne({ name: body.name }).then(existingPerson => {
+        if (existingPerson) {
+            return res.status(400).json({
+                error: "Name must be unique"
+            })
+        }
 
-    if (findPerson) {
-        return res.status(400).json({
-            error: "Name must be unique"
+
+        const person = new Person({
+            name: body.name,
+            number: body.number
         })
-    }
-    const person = {
-        name: body.name,
-        number: body.number,
-        id: generateId(),
-    }
 
-    persons = persons.concat(person)
+        person.save().then(savedPerson => {
+            res.json(savedPerson)
+        })
+    })
 
-    res.json(person)
+    // const findPerson = persons.find(person => person.name === body.name)
+
+    // if (findPerson) {
+    //     return res.status(400).json({
+    //         error: "Name must be unique"
+    //     })
+    // }
+    // const person = {
+    //     name: body.name,
+    //     number: body.number,
+    //     id: generateId(),
+    // }
+
+    // persons = persons.concat(person)
+
+    // res.json(person)
 })
 
 const PORT = process.env.PORT || 3001
