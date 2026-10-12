@@ -81,7 +81,7 @@ const App = () => {
   const deletePerson = (person) => {
     if (confirm(`Delete ${person.name}`)) {
       personServices.deletePerson(person.id)
-        .then(response => setPersons(persons.filter(person_ => person_.id !== response.id)))
+        .then(response => setPersons(persons.filter(person_ => person_.id !== person.id)))
     }
   }
   const addName = (event) => {
@@ -112,6 +112,12 @@ const App = () => {
           setNewMessage(`Added ${response.name}`)
           setTimeout(() => {
             setNewMessage(null)
+          }, 5000)
+        })
+        .catch(error => {
+          setErrorMessage(error.response?.data?.error || error.message)
+          setTimeout(() => {
+            setErrorMessage(null)
           }, 5000)
         })
     }

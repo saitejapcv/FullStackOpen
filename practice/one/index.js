@@ -6,23 +6,23 @@ const app = express()
 app.use(express.json())
 
 
-let notes = [
-    {
-        id: "1",
-        content: "HTML is easy",
-        important: true
-    },
-    {
-        id: "2",
-        content: "Browser can execute only JavaScript",
-        important: false
-    },
-    {
-        id: "3",
-        content: "GET and POST are the most important methods of HTTP protocol",
-        important: true
-    }
-]
+// let notes = [
+//     {
+//         id: "1",
+//         content: "HTML is easy",
+//         important: true
+//     },
+//     {
+//         id: "2",
+//         content: "Browser can execute only JavaScript",
+//         important: false
+//     },
+//     {
+//         id: "3",
+//         content: "GET and POST are the most important methods of HTTP protocol",
+//         important: true
+//     }
+// ]
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World</h1>')
@@ -34,7 +34,7 @@ app.get('/api/notes', (request, response) => {
     })
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
     const id = request.params.id
     Note.findById(id).then(note => {
         if (note) {
@@ -45,8 +45,9 @@ app.get('/api/notes/:id', (request, response) => {
         }
     })
         .catch(error => {
-            console.log(error)
-            response.status(400).send({ error: 'Malformatted ID' })
+            // console.log(error)
+            // response.status(400).send({ error: 'Malformatted ID' })
+            next(error)
         })
     // const note = notes.find(note => note.id === id)
     // if (note) {
@@ -58,9 +59,20 @@ app.get('/api/notes/:id', (request, response) => {
 
 app.delete('/api/notes/:id', (request, response) => {
     const id = request.params.id
-    notes = notes.filter(note => note.id !== id)
+    // notes = notes.filter(note => note.id !== id)
 
-    response.status(204).end()
+    // response.status(204).end()
+
+    Note.findByIdAndDelete(id).then(result => {
+        if (result) {
+            response.status(204).end()
+        }
+        else {
+            response.status(404).end()
+        }
+
+    })
+        .catch(error => next(error))
 })
 
 // const generateId = () => {
@@ -68,8 +80,26 @@ app.delete('/api/notes/:id', (request, response) => {
 //     return String(MaxId)
 // }
 
-app.post('/api/notes', (request, response) => {
+app.put('/api/notes/:id', (request, response, next) => {
+    const { content, importance } = request.body
 
+    Note.findById(request.params.id)
+        .then(note => {
+            if (!note) {
+                response.status(404).end()
+            }
+
+            note.content = content
+            note.importance = importance
+
+            note.save().then(updatedNote => {
+                response.json(updatedNote)
+            })
+        })
+        .catch(error => next(error))
+})
+
+app.post('/api/notes', (request, response) => {
 
     const body = request.body
     if (!body.content) {
@@ -96,6 +126,24 @@ app.post('/api/notes', (request, response) => {
 
     // response.json(note)
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'Unknown Endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+const ErrorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'Malformated error' })
+    }
+
+    next(error)
+}
+
+app.use(ErrorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
