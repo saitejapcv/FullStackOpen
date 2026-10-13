@@ -97,14 +97,14 @@ app.post('/api/persons', (req, res, next) => {
     const body = req.body
     if (!body.name || !body.number) {
         return res.status(400).json({
-            error: "content missing"
+            error: 'content missing'
         })
     }
 
     Person.findOne({ name: body.name }).then(existingPerson => {
         if (existingPerson) {
             return res.status(400).json({
-                error: "Name must be unique"
+                error: 'Name must be unique'
             })
         }
 
@@ -168,7 +168,7 @@ const ErrorHandler = (error, req, res, next) => {
     if (error.name === 'CastError') {
         return res.status(400).send({ error: 'Malformated error' })
     }
-    if (error.name == 'ValidationError') {
+    if (error.name === 'ValidationError') {
         return res.status(400).json({ error: error.message })
     }
 

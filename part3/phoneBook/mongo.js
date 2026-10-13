@@ -29,7 +29,7 @@ if (process.argv.length < 5) {
         if (result.length === 0) {
             console.log('No note')
         }
-        console.log(`phonebook:`)
+        console.log('phonebook:')
         result.forEach(person => {
             console.log(`${person.name} ${person.number}`)
         })
@@ -42,7 +42,7 @@ else {
         number: argnum,
     })
 
-    person.save().then(result => {
+    person.save().then(() => {
         console.log(`added ${argname} ${argnum} to phonebook`)
         mongoose.connection.close()
     })
